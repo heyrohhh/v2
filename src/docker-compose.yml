@@ -1,0 +1,229 @@
+services:
+  redis-cart:
+    image: redis:7.2-alpine
+    container_name: redis-cart
+    networks:
+      - microservice-network
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+
+  cartservice:
+    image: heyrohhh/cartservice:v1
+    container_name: cartservice
+    networks:
+      - microservice-network
+    restart: unless-stopped
+    depends_on:
+      - redis-cart
+    environment:
+      - REDIS_ADDR=redis-cart:6379
+      - PORT=7070
+
+  productcatalogservice:
+    image: heyrohhh/productservice:v1
+    container_name: productcatalogservice
+    networks:
+      - microservice-network
+    restart: unless-stopped
+    environment:
+      - PORT=3550
+      - DISABLE_PROFILER=true
+
+  shippingservice:
+    image: heyrohhh/shippingservice:v1
+    container_name: shippingservice
+    networks:
+      - microservice-network
+    restart: unless-stopped
+    environment:
+      - PORT=50051
+
+  paymentservice:
+    image: heyrohhh/paymentservice:v1
+    container_name: paymentservice
+    networks:
+      - microservice-network
+    environment:
+      - PORT=50051
+      - DISABLE_PROFILER=true
+    restart: unless-stopped
+
+  currencyservice:
+    image: heyrohhh/currencyservice:v1
+    container_name: currencyservice
+    networks:
+      - microservice-network
+    environment:
+      - PORT=7000
+      - DISABLE_PROFILER=true
+    restart: unless-stopped
+
+  emailservice:
+    image: heyrohhh/emailservice:v1
+    container_name: emailservice
+    networks:
+      - microservice-network
+    environment:
+      - PORT=8080
+    restart: unless-stopped
+
+  checkoutservice:
+    image: heyrohhh/checkoutservice:v1
+    container_name: checkoutservice
+    networks:
+      - microservice-network
+    environment:
+      - PORT=5050
+      - PRODUCT_CATALOG_SERVICE_ADDR=productcatalogservice:3550
+      - SHIPPING_SERVICE_ADDR=shippingservice:50051
+      - PAYMENT_SERVICE_ADDR=paymentservice:50051
+      - EMAIL_SERVICE_ADDR=emailservice:8080
+      - CURRENCY_SERVICE_ADDR=currencyservice:7000
+      - CART_SERVICE_ADDR=cartservice:7070
+      - DISABLE_PROFILER=true
+    restart: unless-stopped
+
+  recommendationservice:
+    image: heyrohhh/recommendationservice:v1
+    container_name: recommendationservice
+    networks:
+      - microservice-network
+    environment:
+      - PORT=8080
+      - PRODUCT_CATALOG_SERVICE_ADDR=productcatalogservice:3550
+    restart: unless-stopped
+
+  adservice:
+    image: heyrohhh/adservice:v1
+    container_name: adservice
+    networks:
+      - microservice-network
+    environment:
+      - PORT=9555
+    restart: unless-stopped
+
+  shoppingassistantservice:
+    image: heyrohhh/shoppingassistantservice:v1
+    container_name: shoppingassistantservice
+    restart: unless-stopped
+    networks:
+      - microservice-network
+    environment:
+      - PORT=8080
+      - PRODUCT_CATALOG_SERVICE_ADDR=productcatalogservice:3550
+
+  frontend:
+    image: heyrohhh/frontend:v3.0
+    container_name: frontend
+    networks:
+      - microservice-network
+    restart: unless-stopped
+    environment:
+      - PORT=8080
+      - PRODUCT_CATALOG_SERVICE_ADDR=productcatalogservice:3550
+      - CURRENCY_SERVICE_ADDR=currencyservice:7000
+      - CART_SERVICE_ADDR=cartservice:7070
+      - RECOMMENDATION_SERVICE_ADDR=recommendationservice:8080
+      - SHIPPING_SERVICE_ADDR=shippingservice:50051
+      - CHECKOUT_SERVICE_ADDR=checkoutservice:5050
+      - AD_SERVICE_ADDR=adservice:9555
+      - SHOPPING_ASSISTANT_SERVICE_ADDR=shoppingassistantservice:8080
+
+  loadgenerator:
+    image: heyrohhh/loadgenerator:v1
+    container_name: loadgenerator
+    networks:
+      - microservice-network
+    restart: unless-stopped
+    environment:
+      - FRONTEND_ADDR=frontend:8080
+      - USERS=10
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+    networks:
+      - microservice-network
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: always
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    networks:
+      - microservice-network
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../monitor/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ../monitor/alerts/alerts.yml:/etc/prometheus/alerts.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    restart: unless-stopped
+  alertmanager:
+      image: prom/alertmanager:latest
+      container_name: alertmanager
+      networks:
+        - microservice-network
+      ports: 
+        - "9093:9093"
+      volumes:
+        - ../monitor/alerts/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      env_file:
+         - .env
+      command:
+         - "--config.file=/etc/alertmanager/alertmanager.yml"
+      restart: unless-stopped
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    networks:
+      - microservice-network
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+  redis-exporter:
+    image: oliver006/redis_exporter
+    container_name: redis-exporter
+    networks:
+      - microservice-network
+    environment:
+      - REDIS_ADDR=redis-cart:6379
+    ports:
+      - "9121:9121"
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter
+    container_name: nginx-exporter
+    networks:
+      - microservice-network
+    command:
+      - "--nginx.scrape-uri=http://nginx/stub_status"
+    ports:
+      - "9113:9113"
+  node-exporter:
+    image: prom/node-exporter
+    container_name: node-exporter
+    networks:
+      - microservice-network
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--path.rootfs=/rootfs"
+      
+networks:
+  microservice-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local
