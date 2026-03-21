@@ -1,17 +1,17 @@
-# Default values for product-service.
+# Default values for payment-service.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
-replicaCount: 2
+replicaCount: 1
 
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
-  repository: heyrohhh/productcatalogue
+  repository: nginx
   # This sets the pull policy for images.
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v1"
+  tag: ""
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
@@ -54,7 +54,7 @@ service:
   # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   type: ClusterIP
   # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
-  port: 3550
+  port: 80
 
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
@@ -64,7 +64,7 @@ ingress:
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
-    - host: product.local
+    - host: chart-example.local
       paths:
         - path: /
           pathType: ImplementationSpecific
@@ -84,11 +84,11 @@ httpRoute:
   # Which Gateways this Route is attached to.
   parentRefs:
   - name: gateway
-    sectionName: 80
-    namespace: microservice
+    sectionName: http
+    # namespace: default
   # Hostnames matching HTTP header.
   hostnames:
-  - product.local
+  - chart-example.local
   # List of rules and filters applied.
   rules:
   - matches:
@@ -127,19 +127,19 @@ resources: {}
 livenessProbe:
   httpGet:
     path: /
-    port: 3550
+    port: http
 readinessProbe:
   httpGet:
     path: /
-    port: 3550
+    port: http
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
-  enabled: true
-  minReplicas: 2
-  maxReplicas: 5
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
   targetCPUUtilizationPercentage: 80
-  targetMemoryUtilizationPercentage: 75
+  # targetMemoryUtilizationPercentage: 80
 
 # Additional volumes on the output Deployment definition.
 volumes: []
@@ -159,6 +159,3 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
-
-env:
-  ENABLE_PROFILER: "false"
