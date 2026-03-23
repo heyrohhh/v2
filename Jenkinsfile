@@ -8,6 +8,7 @@ pipeline{
     stages{
          stage('Parallel Microservices Build') {
             matrix {
+                options { concurrencyContainer(3) }
                 axes {
                     axis {
                         name 'src'
@@ -23,10 +24,14 @@ pipeline{
                            usernameVariable: 'DOCKER_USER',
                            passwordVariable: 'DOCKER_PASS',
                 )]) 
-                        script{
+                        script {
+                              sh """
+                              echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                               echo "work on ${src}"
-                              sh "docker build -t heyrohhh/${src}:${TAG}"
-                              sh "docker push heyrohhh/${src}:{TAG}"
+                              docker build -t heyrohhh/${src}:${TAG} ./${src}
+                              docker push heyrohhh/${src}:${TAG}
+
+                              """
                         }
                     }
                 }
@@ -35,4 +40,11 @@ pipeline{
 
          }
     }
+
+    post {
+     always {
+         sh "docker image prune -f"
+     }
 }
+}
+
