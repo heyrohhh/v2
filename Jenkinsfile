@@ -71,7 +71,7 @@ pipeline{
                     }
                 }
 
-                stages {
+               
                 stage("Image Building"){
                     when {
                         expression{
@@ -85,7 +85,7 @@ pipeline{
                               """                             
                         }
                 }
-    }
+    
                 stage("Trivy Scan"){
                      when {
                         expression{
@@ -118,6 +118,7 @@ pipeline{
                 }
              }
             }
+
 
     post {
      always { 
