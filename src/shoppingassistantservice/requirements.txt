@@ -12,6 +12,7 @@ asyncpg==0.30.0
     # via
     #   google-cloud-alloydb-connector
     #   langchain-postgres
+aiohttp>=3.8.0
 blinker==1.9.0
     # via flask
 cachetools==5.5.2

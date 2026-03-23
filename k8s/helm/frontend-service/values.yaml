@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
-replicaCount: 3
+replicaCount: 5
 
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
@@ -113,11 +113,11 @@ httpRoute:
 
 resources: 
     limits:
-      cpu: 200m
+      cpu: 512m
       memory: 256Mi
     requests:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 256m
+      memory: 190Mi
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
@@ -139,7 +139,7 @@ readinessProbe:
 autoscaling:
   enabled: enable
   minReplicas: 3
-  maxReplicas: 6
+  maxReplicas: 20
   targetCPUUtilizationPercentage: 75
   targetMemoryUtilizationPercentage: 70
 
