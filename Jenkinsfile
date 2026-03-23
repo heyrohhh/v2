@@ -9,7 +9,7 @@ pipeline{
 
         stage('check Files') {
             steps {
-                sh "ls-R"
+                sh "ls -R"
             }
         }
          stage('Parallel Microservices Build') {
