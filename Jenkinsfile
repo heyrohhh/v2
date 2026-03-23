@@ -2,13 +2,13 @@ pipeline{
     agent any
      
     environment{
-         TAG: "${BUILD_NUMBER}"
+         TAG = "${BUILD_NUMBER}"
     }
 
     stages{
          stage('Parallel Microservices Build') {
             matrix {
-                options { concurrencyContainer(3) }
+
                 axes {
                     axis {
                         name 'src'
