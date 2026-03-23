@@ -37,6 +37,7 @@ pipeline{
                 }
             }
           }
+        }
 
           stage('Docker login') {
             when {
@@ -83,7 +84,8 @@ pipeline{
                               docker build -t heyrohhh/${src}:${TAG} ./src/${src}
                               """                             
                         }
-                    }
+                }
+    }
                 stage("Trivy Scan"){
                      when {
                         expression{
@@ -116,9 +118,6 @@ pipeline{
                 }
              }
             }
-
-         }
-    }
 
     post {
      always { 
