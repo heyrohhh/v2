@@ -6,13 +6,19 @@ pipeline{
     }
 
     stages{
+
+        stage('check Files') {
+            steps {
+                sh "ls-R"
+            }
+        }
          stage('Parallel Microservices Build') {
             matrix {
 
                 axes {
                     axis {
                         name 'src'
-                        values 'adservice','cartservice','checkoutservice','currencyservice','emailservice','frontend','loadgenrator','paymentservice','productcatalogservice','recommendationservice','shippingservice','shoppingassistantservice'
+                        values 'adservice','cartservice','checkoutservice','currencyservice','emailservice','frontend','loadgenerator','paymentservice','productcatalogservice','recommendationservice','shippingservice','shoppingassistantservice'
                     }
                 }
 
