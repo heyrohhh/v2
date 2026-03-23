@@ -6,7 +6,7 @@ pipeline{
     }
 
     stages{
-         stage('Docker Image build') {
+         stage('Parallel Microservices Build') {
             matrix {
                 axes {
                     axis {
@@ -14,11 +14,10 @@ pipeline{
                         values 'adservice','cartservice','checkoutservice','currencyservice','emailservice','frontend','loadgenrator','paymentservice','productcatalogservice','recommendationservice','shippingservice','shoppingassistantservice'
                     }
                 }
-            }
 
-            stages{
+                stages {
                 stage("Building and Pushing"){
-                    steps{
+                    steps {
                         withCredentials([usernamePassword(
                            credentialsId: 'DOCKERHUBCRED',
                            usernameVariable: 'DOCKER_USER',
@@ -31,6 +30,7 @@ pipeline{
                         }
                     }
                 }
+             }
             }
 
          }
