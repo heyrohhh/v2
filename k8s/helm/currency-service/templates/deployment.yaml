@@ -4,6 +4,7 @@ metadata:
   name: {{ include "currency-service.fullname" . }}
   labels:
     {{- include "currency-service.labels" . | nindent 4 }}
+    namespace: {{ .Values.namespace }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
@@ -40,6 +41,11 @@ spec:
           {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env: 
+          - name: DISABLE_PROFILER
+            value: {{ .Values.env.DISABLE_PROFILER | quote }}
+          - name: PORT
+            value: {{ .Values.env.PORT | quote }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

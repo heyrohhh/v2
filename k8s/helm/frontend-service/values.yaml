@@ -54,7 +54,7 @@ service:
   # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   type: NodePort
   # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
-  port: 80
+  port: 8080
 
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
@@ -122,12 +122,18 @@ resources:
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
   httpGet:
-    path: /
-    port: 80
+    path: /_healthz
+    port: 8080
+  initialDelaySeconds: 15
+  failureThreshold: 3
+  periodSeconds: 7
 readinessProbe:
   httpGet:
-    path: /
-    port: 80
+    path: /_healthz
+    port: 8080
+  initialDelaySeconds: 10
+  failureThreshold: 3
+  periodSeconds: 5
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
@@ -156,6 +162,14 @@ tolerations: []
 
 affinity: {}
 env:
-  PRODUCT_CATALOG_SERVICE_ADDR: http://product-service:3550
-  CART_SERVICE_ADDR: http://cart-cart-service:7070
-    
+  SHIPPING_SERVICE_ADDR: "shipping-shipping-service:50051"
+  CURRENCY_SERVICE_ADDR: "currency-currency-service:7000"
+  PRODUCT_CATALOG_SERVICE_ADDR: "product-service:3550"
+  CART_SERVICE_ADDR: "cart-cart-service:7070"
+  RECOMMENDATION_SERVICE_ADDR: "recommand-recommendation-service:8080"
+  CHECKOUT_SERVICE_ADDR: "checkout-checkout-service:5050"
+  EMAIL_SERVICE_ADDR: "email-email-service:8080"
+  PAYMENT_SERVICE_ADDR: "payment-payment-service:50051"
+  AD_SERVICE_ADDR: "ad-ad-service:9555"
+  SHOPPING_ASSISTANT_SERVICE_ADDR: "assitant-shopping-assitant:8080"
+  PORT: "8080"

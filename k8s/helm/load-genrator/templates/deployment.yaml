@@ -40,6 +40,11 @@ spec:
           {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: FRONTEND_ADDR
+              value: {{ .Values.env.FRONTEND_ADDR | quote }}
+            - name: USERS
+              value: {{ .Values.env.USERS | quote }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

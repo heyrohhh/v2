@@ -40,6 +40,7 @@ spec:
           {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["redis-server", "--appendonly", "yes"]
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

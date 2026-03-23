@@ -41,8 +41,24 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            - name : PRODUCT_CATALOG_SERVICE_ADDR
+            - name: PRODUCT_CATALOG_SERVICE_ADDR
               value: {{ .Values.env.PRODUCT_CATALOG_SERVICE_ADDR | quote }}
+            - name: CURRENCY_SERVICE_ADDR
+              value: {{ .Values.env.CURRENCY_SERVICE_ADDR | quote }}
+            - name: CART_SERVICE_ADDR
+              value: {{ .Values.env.CART_SERVICE_ADDR | quote }}
+            - name: RECOMMENDATION_SERVICE_ADDR
+              value: {{ .Values.env.PRODUCT_CATALOG_SERVICE_ADDR | quote }}
+            - name: SHIPPING_SERVICE_ADDR
+              value: {{ .Values.env.SHIPPING_SERVICE_ADDR | quote }}
+            - name: CHECKOUT_SERVICE_ADDR
+              value: {{ .Values.env.CHECKOUT_SERVICE_ADDR | quote }}
+            - name: AD_SERVICE_ADDR
+              value: {{ .Values.env.AD_SERVICE_ADDR | quote }}
+            - name: SHOPPING_ASSISTANT_SERVICE_ADDR
+              value: {{ .Values.env.SHOPPING_ASSISTANT_SERVICE_ADDR | quote }}
+            - name: PORT
+              value: {{ .Values.env.PORT | quote }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

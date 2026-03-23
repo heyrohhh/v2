@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM --platform=$BUILDPLATFORM python:3.14.2-slim@sha256:1a3c6dbfd2173971abba880c3cc2ec4643690901f6ad6742d0827bae6cefc925 AS base
+FROM --platform=$BUILDPLATFORM python:3.11-slim AS base
 
 FROM base AS builder
 RUN apt-get -qq update \
@@ -31,8 +31,8 @@ ENV PYTHONUNBUFFERED=1
 # get packages
 WORKDIR /shoppingassistantservice
 
-# Grab packages from builder - Fixed to copy site-packages correctly
-COPY --from=builder /usr/local/lib/python3.14/site-packages /usr/local/lib/python3.14/site-packages
+# Grab packages from builder
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Add the application
