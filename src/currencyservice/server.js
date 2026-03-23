@@ -106,8 +106,8 @@ function _loadProto (path) {
  * Helper function that gets currency data from a stored JSON file
  * Uses public data from European Central Bank
  */
+const data = require('./data/currency_conversion.json');
 function _getCurrencyData (callback) {
-  const data = require('./data/currency_conversion.json');
   callback(data);
 }
 
