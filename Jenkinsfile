@@ -36,7 +36,7 @@ pipeline{
                      sh """
                               echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                               echo "work on ${src}"
-                              docker build -t heyrohhh/${src}:${TAG} ./${src}
+                              docker build -t heyrohhh/${src}:${TAG} .src/${src}
                               docker push heyrohhh/${src}:${TAG}
 
                               """
