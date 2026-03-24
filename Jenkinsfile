@@ -98,30 +98,39 @@ pipeline {
         }
 
         stage('Deploy to Kubernetes') {
-            // when {
-            //     expression { env.detectChanges || params.FORCE_DEPLOY }
-            // }
+            when {
+                expression { env.detectChanges || params.FORCE_DEPLOY }
+            }
             steps {
                 script {
                     def services = env.detectChanges.split(',')
 
-                    services.each { svc ->
+                   services.each { svc ->
 
-                        def helmService = serviceMap[svc]
+                     def helmService = serviceMap[svc]
+                     if (!helmService) { error "No helm mapping for ${svc}"}
 
-                        if (!helmService) {
-                            error "No helm mapping for ${svc}"
-                        }
+                  if (env.detectChanges.split(',').contains(svc)) {
 
-                        sh """
-                        helm upgrade --install ${helmService} k8s/helm/${helmService} \
-                        --set image.repository=${DOC_USER}/${svc} \
-                        --set image.tag=${TAG} \
-                        --namespace microservices \
-                        --create-namespace \
-                        --wait
-                        """
-                    }
+                    sh """
+                      helm upgrade --install ${helmService} k8s/helm/${helmService} \
+                      --set image.repository=${DOC_USER}/${svc} \
+                      --set image.tag=${TAG} \
+                      --namespace microservices \
+                      --create-namespace \
+                     --wait
+                 """
+
+              } else {
+
+              sh """
+               helm upgrade --install ${helmService} k8s/helm/${helmService} \
+                 --namespace microservices \
+               --create-namespace \
+                --wait
+                """
+    }
+}
                 }
             }
         }
