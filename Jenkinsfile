@@ -1,163 +1,131 @@
+def serviceConfig = [
+    'adservice' : [dockerfile: './src/adservice/Dockerfile'],
+    'cartservice': [dockerfile: './src/cartservice/src/Dockerfile'],
+    'checkoutservice' :[dockerfile: './src/checkoutservice/Dockerfile'],
+    'currencyservice' :[dockerfile: './src/currencyservice/Dockerfile'],
+    'emailservice' :[dockerfile: './src/emailservice/Dockerfile'],
+    'frontend' :[dockerfile: './src/frontend/Dockerfile'],
+    'loadgenerator' :[dockerfile: './src/loadgenerator/Dockerfile'],
+    'paymentservice':[dockerfile: './src/paymentservice/Dockerfile'],
+    'productcatalogservice': [dockerfile: './src/productcatalogservice/Dockerfile'],
+    'recommendationservice': [dockerfile: './src/recommendationservice/Dockerfile'],
+    'shippingservice':[dockerfile: './src/shippingservice/Dockerfile'],
+    'shoppingassistantservice': [dockerfile: './src/shoppingassistantservice/Dockerfile'],
+]
 
+def serviceMap = [
+    'adservice': 'ad-service',
+    'cartservice': 'cart-service',
+    'checkoutservice': 'checkout-service',
+    'currencyservice': 'currency-service',
+    'emailservice': 'email-service',
+    'frontend': 'frontend-service',
+    'loadgenerator': 'load-genrator',
+    'paymentservice': 'payment-service',
+    'productcatalogservice': 'product-service',
+    'recommendationservice': 'recommendation-service',
+    'shippingservice': 'shipping-service',
+    'shoppingassistantservice': 'shopping-assistant'
+]
 
-
-     def serviceConfig =[ 
-                                'adservice' : [dockerfile: './src/adservice/Dockerfile'],
-                                'cartservice': [dockerfile: './src/cartservice/src/Dockerfile'],
-                                'checkoutservice' :[dockerfile: './src/checkoutservice/Dockerfile'],
-                                'currencyservice' :[dockerfile: './src/currencyservice/Dockerfile'],
-                                'emailservice' :[dockerfile: './src/emailservice/Dockerfile'],
-                                'frontend' :[dockerfile: './src/frontend/Dockerfile'],
-                                'loadgenerator' :[dockerfile: './src/loadgenerator/Dockerfile'],
-                                'paymentservice':[dockerfile: './src/paymentservice/Dockerfile'],
-                                'productcatalogservice': [dockerfile: './src/productcatalogservice/Dockerfile'],
-                                'recommendationservice': [dockerfile: './src/recommendationservice/Dockerfile'],
-                                 'shippingservice':[dockerfile: './src/shippingservice/Dockerfile'],
-                               'shoppingassistantservice': [dockerfile: './src/shoppingassistantservice/Dockerfile'],
-     ]
-
-pipeline{
+pipeline {
     agent any
-     
-    environment{
-         DOC_USER = "heyrohh"
-         TAG = "${BUILD_NUMBER}"
+
+    environment {
+        DOC_USER = "heyrohh"
+        TAG = "${BUILD_NUMBER}"
     }
-    stages{
-          stage('Detect Change') {
-            steps{
+
+    stages {
+
+        stage('Detect Change') {
+            steps {
                 script {
-                    def detectChanges = sh(
+                    def changes = sh(
                         script: "git diff --name-only HEAD~1 HEAD",
                         returnStdout: true
-                    ).trim()
+                    ).trim().readLines()
 
-                     echo "detectChanges:\n${detectChanges}"
+                    def changedServices = serviceConfig.keySet().findAll { svc ->
+                        changes.any { it.startsWith("src/${svc}/") }
+                    }
 
-                    def allService = [
-                              'adservice','cartservice','checkoutservice','currencyservice','emailservice','frontend','loadgenerator','paymentservice','productcatalogservice','recommendationservice','shippingservice','shoppingassistantservice'
-                         ]
-                    env.detectChanges = allService.findAll {
-                        service -> detectChanges.contains("src/${service}")
-                }.join(',')
-
-                echo "Service to build: ${env.detectChanges}"
-
-                if (!env.detectChanges){
-                    echo"no changes detected"
+                    env.detectChanges = changedServices.join(',')
+                    echo "Changed services: ${env.detectChanges}"
                 }
             }
-          }
         }
 
-       stage('Docker login') {
+        stage('Docker Login') {
             steps {
-                 script {
-                     withCredentials ([usernamePassword (
-                        credentialsId: 'DOCKERHUBCRED',
-                        usernameVariable: 'DOCKER_USER',
-                        passwordVariable: 'DOCKER_PASS'
-                     )]) {
-                         sh 'echo "$DOCKER_PASS" | docker login -u $DOCKER_USER --password-stdin '
-                     }
-                 }
-
-
-            }
-          }
-         stage('Parallel Microservices Build') {
- 
-              when {
-                    expression {env.detectChanges != ''}
-                 } 
-
-            matrix {
-                axes {
-                    axis {
-                        name 'src'
-                        values 'adservice','cartservice','checkoutservice','currencyservice','emailservice','frontend','loadgenerator','paymentservice','productcatalogservice','recommendationservice','shippingservice','shoppingassistantservice'
-                    }
+                withCredentials([usernamePassword(
+                    credentialsId: 'DOCKERHUBCRED',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh 'echo "$DOCKER_PASS" | docker login -u $DOCKER_USER --password-stdin'
                 }
+            }
+        }
 
-               stages{ 
+        stage('Build + Push') {
+            when {
+                expression { env.detectChanges }
+            }
+            steps {
+                script {
+                    def services = env.detectChanges.split(',')
 
-                       // IMAGE BUILDING
+                    services.each { svc ->
+                        def config = serviceConfig[svc]
 
-                            stage("Image Building"){
-                  when {
-                        expression{
-                          env.detectChanges.split(',').contains(src)
-                        } 
-                    } 
-                    steps {
-                          script{
-                               def config = serviceConfig[src]
-
-                               if(!config) {
-                                   error "no config found for service ${src}"
-                               }
-
-                          sh """
-                                   echo "we are building image for ${src}"
-                                   docker build -f ${config.dockerfile} -t ${DOC_USER}/${src}:${TAG}  ./src/${src}
-                             """
-
-
-                          }                          
-                        }
-                      }
-
-                       
-                        // Trivy scan
-
-
-                   stage("Trivy Scan"){
-                     when {
-                        expression{
-                          env.detectChanges.split(',').contains(src)
-                        } 
-                    }
-
-                    steps{
                         sh """
-                               trivy image --format json --ignore-unfixed -o trivy_report_${src}.json ${DOC_USER}/${src}:${TAG}
-                               trivy image --exit-code 0 --severity CRITICAL,HIGH --ignore-unfixed  ${DOC_USER}/${src}:${TAG}
+                        echo "Building ${svc}"
+                        docker build -f ${config.dockerfile} -t ${DOC_USER}/${svc}:${TAG} ./src/${svc}
+
+                        trivy image --format json --ignore-unfixed -o trivy_${svc}.json ${DOC_USER}/${svc}:${TAG}
+
+                        docker push ${DOC_USER}/${svc}:${TAG}
                         """
                     }
                 }
-
-                //IMAGE PUSH
-
-                stage('Image Push'){
-                     when {
-        expression {
-            env.detectChanges.split(',').contains(src)
+            }
         }
-    }
-                    steps{
-                          sh """
-                               docker push ${DOC_USER}/${src}:${TAG}
-                          """
+
+        stage('Deploy to Kubernetes') {
+            when {
+                expression { env.detectChanges }
+            }
+            steps {
+                script {
+                    def services = env.detectChanges.split(',')
+
+                    services.each { svc ->
+
+                        def helmService = serviceMap[svc]
+
+                        if (!helmService) {
+                            error "No helm mapping for ${svc}"
+                        }
+
+                        sh """
+                        helm upgrade --install ${helmService} k8s/helm/${helmService} \
+                        --set image.repository=${DOC_USER}/${svc} \
+                        --set image.tag=${TAG} \
+                        --namespace microservices \
+                        --create-namespace \
+                        --wait
+                        """
                     }
                 }
-
-               }
-
-
-                }
-                }
-             }
-
-                post {
-     always { 
-        archiveArtifacts artifacts: 'trivy_report_*.json',
-          allowEmptyArchive: true
-         sh 'docker image prune -f || true'
-     }
-}
             }
+        }
+    }
 
-
- 
-
-
+    post {
+        always {
+            archiveArtifacts artifacts: 'trivy_*.json', allowEmptyArchive: true
+            sh 'docker image prune -f || true'
+        }
+    }
+}
