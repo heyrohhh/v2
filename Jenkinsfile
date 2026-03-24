@@ -51,9 +51,6 @@ pipeline{
         }
 
        stage('Docker login') {
-            when {
-                expression {env.detectChanges != ''}
-            }
             steps {
                  script {
                      withCredentials ([usernamePassword (
@@ -150,15 +147,17 @@ pipeline{
                 }
                 }
              }
-            }
 
-
-    post {
+                post {
      always { 
         archiveArtifacts artifacts: 'trivy_report_*.json',
           allowEmptyArchive: true
          sh 'docker image prune -f || true'
      }
 }
+            }
+
+
+ 
 
 
