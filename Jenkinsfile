@@ -4,7 +4,8 @@ parameters {
 
 def serviceConfig = [
     'adservice' : [dockerfile: './src/adservice/Dockerfile'],
-    'cartservice': [dockerfile: './src/cartservice/src/Dockerfile'],
+    'cartservice': [dockerfile: './src/cartservice/src/Dockerfile',
+                    context: './src/cartservice/src'],
     'checkoutservice' :[dockerfile: './src/checkoutservice/Dockerfile'],
     'currencyservice' :[dockerfile: './src/currencyservice/Dockerfile'],
     'emailservice' :[dockerfile: './src/emailservice/Dockerfile'],
@@ -85,7 +86,7 @@ pipeline {
 
                         sh """
                         echo "Building ${svc}"
-                        docker build -f ${config.dockerfile} -t ${DOC_USER}/${svc}:${TAG} ./src/${svc}
+                        docker build -f ${config.dockerfile} -t ${DOC_USER}/${svc}:${TAG} ${config.context ?: "./src/${svc}}
 
                         trivy image --format json --ignore-unfixed -o trivy_${svc}.json ${DOC_USER}/${svc}:${TAG}
 
