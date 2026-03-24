@@ -1,18 +1,31 @@
+
+
+
+     def serviceConfig =[ 
+                                'adservice' : [dockerfile: './src/adservice/Dockerfile'],
+                                'cartservice': [dockerfile: './src/cartservice/src/Dockerfile'], // ← special path
+                                'checkoutservice' :[dockerfile: './src/checkoutservice/Dockerfile'],
+                                'currencyservice' :[dockerfile: './src/currencyservice/Dockerfile'],
+                                'emailservice' :[dockerfile: './src/emailservice/Dockerfile'],
+                                'frontend' :[dockerfile: './src/frontend/Dockerfile'],
+                                'loadgenerator' :[dockerfile: './src/loadgenerator/Dockerfile'],
+                                'paymentservice':[dockerfile: './src/paymentservice/Dockerfile'],
+                                'productcatalogservice': [dockerfile: './src/productcatalogservice/Dockerfile'],
+                                'recommendationservice': [dockerfile: './src/recommendationservice/Dockerfile'],
+                                 'shippingservice':[dockerfile: './src/shippingservice/Dockerfile'],
+                               'shoppingassistantservice': [dockerfile: './src/shoppingassistantservice/Dockerfile'],
+     ]
+
 pipeline{
     agent any
      
     environment{
-         
+         DOC_USER = "heyrohh"
          TAG = "${BUILD_NUMBER}"
     }
-
     stages{
 
-        // stage('check Files') {
-        //     steps {
-        //         sh "ls -R"
-        //     }
-        // }
+       
           stage('Detect Change') {
             steps{
                 script {
@@ -79,10 +92,20 @@ pipeline{
                         } 
                     }
                     steps {
-                     sh """
-                              echo "work on ${src}"
-                              docker build -t heyrohhh/${src}:${TAG} ./src/${src}
-                              """                             
+                          script{
+                               def config = serviceConfig[src]
+
+                               if(!config) {
+                                   error "no config found for service ${src}"
+                               }
+
+                          sh """
+                                   echo "we are building image for ${src}"
+                                   docker build -f ${config.dockerfile} -t ${DOC_USER}/${src}:${TAG}  ./src/${src}
+                             """
+
+
+                          }                          
                         }
                 }
     
@@ -95,8 +118,8 @@ pipeline{
 
                     steps{
                         sh """
-                               trivy image --format json --ignore-unfixed -o trivy_report_${src}.json heyrohhh/${src}:${TAG}
-                               trivy image --exit-code 0 --severity CRITICAL,HIGH --ignore-unfixed  heyrohhh/${src}:${TAG}
+                               trivy image --format json --ignore-unfixed -o trivy_report_${src}.json ${DOC_USER}/${src}:${TAG}
+                               trivy image --exit-code 0 --severity CRITICAL,HIGH --ignore-unfixed  ${DOC_USER}/${src}:${TAG}
                         """
                     }
                 }
@@ -109,7 +132,7 @@ pipeline{
     }
                     steps{
                           sh """
-                               docker push heyrohhh/${src}:${TAG}
+                               docker push ${DOC_USER}/${src}:${TAG}
                           """
                     }
                 }
