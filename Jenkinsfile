@@ -16,6 +16,7 @@ def serviceConfig = [
     'recommendationservice': [dockerfile: './src/recommendationservice/Dockerfile'],
     'shippingservice':[dockerfile: './src/shippingservice/Dockerfile'],
     'shoppingassistantservice': [dockerfile: './src/shoppingassistantservice/Dockerfile'],
+    
 ]
 
 def serviceMap = [
@@ -30,7 +31,7 @@ def serviceMap = [
     'productcatalogservice': 'product-service',
     'recommendationservice': 'recommendation-service',
     'shippingservice': 'shipping-service',
-    'shoppingassistantservice': 'shopping-assistant'
+    'shoppingassistantservice': 'shopping-assitant'
 ]
 
 pipeline {
@@ -97,43 +98,32 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
-            when {
-                expression { env.detectChanges || params.FORCE_DEPLOY }
-            }
-            steps {
-                script {
-                    def services = env.detectChanges.split(',')
+stage('Deploy to Kubernetes') {
+    steps {
+        script {
 
-                   services.each { svc ->
+            def services = serviceConfig.keySet()
 
-                     def helmService = serviceMap[svc]
-                     if (!helmService) { error "No helm mapping for ${svc}"}
+            services.each { svc ->
 
-                  if (env.detectChanges.split(',').contains(svc)) {
+                def helmService = serviceMap[svc]
 
-                    sh """
-                      helm upgrade --install ${helmService} k8s/helm/${helmService} \
-                      --set image.repository=${DOC_USER}/${svc} \
-                      --set image.tag=${TAG} \
-                      --namespace microservices \
-                      --create-namespace \
-                     --wait
-                 """
+                if (!helmService) {
+                    error "No helm mapping for ${svc}"
+                }
 
-              } else {
-
-              sh """
-               helm upgrade --install ${helmService} k8s/helm/${helmService} \
-                 --namespace microservices \
-               --create-namespace \
+                sh """
+                helm upgrade --install ${helmService} k8s/helm/${helmService} \
+                --set image.repository=${DOC_USER}/${svc} \
+                --set image.tag=${TAG} \
+                --namespace microservices \
+                --create-namespace \
                 --wait
                 """
-    }
-}
-                }
             }
         }
+    }
+}
     }
 
     post {
