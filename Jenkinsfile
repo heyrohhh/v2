@@ -3,7 +3,7 @@
 
      def serviceConfig =[ 
                                 'adservice' : [dockerfile: './src/adservice/Dockerfile'],
-                                'cartservice': [dockerfile: './src/cartservice/src/Dockerfile'], // ← special path
+                                'cartservice': [dockerfile: './src/cartservice/src/Dockerfile'],
                                 'checkoutservice' :[dockerfile: './src/checkoutservice/Dockerfile'],
                                 'currencyservice' :[dockerfile: './src/currencyservice/Dockerfile'],
                                 'emailservice' :[dockerfile: './src/emailservice/Dockerfile'],
@@ -24,8 +24,6 @@ pipeline{
          TAG = "${BUILD_NUMBER}"
     }
     stages{
-
-       
           stage('Detect Change') {
             steps{
                 script {
@@ -52,7 +50,7 @@ pipeline{
           }
         }
 
-          stage('Docker login') {
+       stage('Docker login') {
             when {
                 expression {env.detectChanges != ''}
             }
@@ -84,13 +82,17 @@ pipeline{
                     }
                 }
 
-               
-                stage("Image Building"){
+               stages{ 
+
+                       // IMAGE BUILDING
+
+                            stage("Image Building"){
                     when {
                         expression{
                           env.detectChanges.split(',').contains(src)
                         } 
-                    }
+                    } 
+                }
                     steps {
                           script{
                                def config = serviceConfig[src]
@@ -107,9 +109,12 @@ pipeline{
 
                           }                          
                         }
-                }
-    
-                stage("Trivy Scan"){
+
+                       
+                        // Trivy scan
+
+
+                   stage("Trivy Scan"){
                      when {
                         expression{
                           env.detectChanges.split(',').contains(src)
@@ -124,6 +129,8 @@ pipeline{
                     }
                 }
 
+                //IMAGE PUSH
+
                 stage('Image Push'){
                      when {
         expression {
@@ -136,7 +143,8 @@ pipeline{
                           """
                     }
                 }
-                
+
+               }  
                 }
                 }
              }
