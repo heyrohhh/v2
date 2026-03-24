@@ -86,7 +86,7 @@ pipeline {
 
                         sh """
                         echo "Building ${svc}"
-                        docker build -f ${config.dockerfile} -t ${DOC_USER}/${svc}:${TAG} ${config.context ?: "./src/${svc}}
+                        docker build -f ${config.dockerfile} -t ${DOC_USER}/${svc}:${TAG} ${config.context ?: "./src/${svc}"}
 
                         trivy image --format json --ignore-unfixed -o trivy_${svc}.json ${DOC_USER}/${svc}:${TAG}
 
