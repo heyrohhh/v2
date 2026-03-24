@@ -98,9 +98,9 @@ pipeline {
         }
 
         stage('Deploy to Kubernetes') {
-            when {
-                expression { env.detectChanges || params.FORCE_DEPLOY }
-            }
+            // when {
+            //     expression { env.detectChanges || params.FORCE_DEPLOY }
+            // }
             steps {
                 script {
                     def services = env.detectChanges.split(',')
