@@ -44,9 +44,7 @@ WORKDIR /email_server
 # Grab packages from builder
 COPY --from=builder /usr/local/lib/python3.14/ /usr/local/lib/python3.14/
 
-# Add the application
 COPY . .
-#port
 EXPOSE 8080
 ENTRYPOINT [ "python", "email_server.py" ]   
- 
+  

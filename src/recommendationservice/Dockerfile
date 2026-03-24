@@ -23,7 +23,7 @@ RUN apk update \
     && apk add --no-cache g++ linux-headers \ 
     && rm -rf /var/cache/apk/*
  
-# get packages
+#get packages
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
