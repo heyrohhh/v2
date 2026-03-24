@@ -87,12 +87,11 @@ pipeline{
                        // IMAGE BUILDING
 
                             stage("Image Building"){
-                    when {
+                  when {
                         expression{
                           env.detectChanges.split(',').contains(src)
                         } 
                     } 
-                }
                     steps {
                           script{
                                def config = serviceConfig[src]
@@ -109,6 +108,7 @@ pipeline{
 
                           }                          
                         }
+                      }
 
                        
                         // Trivy scan
@@ -144,7 +144,9 @@ pipeline{
                     }
                 }
 
-               }  
+               }
+
+
                 }
                 }
              }
