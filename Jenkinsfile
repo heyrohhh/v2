@@ -1,3 +1,7 @@
+parameters {
+    booleanParam(name: 'FORCE_DEPLOY', defaultValue: false, description: 'Force deployment even if no changes')
+}
+
 def serviceConfig = [
     'adservice' : [dockerfile: './src/adservice/Dockerfile'],
     'cartservice': [dockerfile: './src/cartservice/src/Dockerfile'],
@@ -94,7 +98,7 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             when {
-                expression { env.detectChanges }
+                expression { env.detectChanges || params.FORCE_DEPLOY }
             }
             steps {
                 script {
