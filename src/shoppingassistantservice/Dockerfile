@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM --platform=$BUILDPLATFORM python:3.11-slim AS base
-
+ 
 FROM base AS builder
 RUN apt-get -qq update \
     && apt-get install -y --no-install-recommends g++ \
