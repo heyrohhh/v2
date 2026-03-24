@@ -22,21 +22,15 @@ RUN apk add --update --no-cache \
     g++
 
 WORKDIR /usr/src/app
-
 COPY package*.json ./
-
 RUN npm install --omit=dev
 
 FROM node:20.20.0-alpine@sha256:09e2b3d9726018aecf269bd35325f46bf75046a643a66d28360ec71132750ec8
-
 RUN apk add --no-cache nodejs
-
 WORKDIR /usr/src/app
 
 COPY --from=builder /usr/src/app/node_modules ./node_modules
-
 COPY . .
 
 EXPOSE 7000
-
 ENTRYPOINT [ "node", "server.js" ] 

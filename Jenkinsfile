@@ -36,7 +36,7 @@ pipeline {
     agent any
 
     environment {
-        DOC_USER = "heyrohh"
+        DOC_USER = "heyrohhh"
         TAG = "${BUILD_NUMBER}"
     }
 

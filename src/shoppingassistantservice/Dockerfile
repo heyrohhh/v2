@@ -24,7 +24,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 FROM base
- 
+  
 # Enable unbuffered logging
 ENV PYTHONUNBUFFERED=1
 

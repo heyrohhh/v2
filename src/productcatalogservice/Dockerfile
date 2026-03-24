@@ -38,4 +38,4 @@ COPY products.json .
 ENV GOTRACEBACK=single
 #port
 EXPOSE 3550
-ENTRYPOINT ["/src/server"]
+ENTRYPOINT ["/src/server"] 
