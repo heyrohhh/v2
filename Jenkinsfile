@@ -1,5 +1,5 @@
 parameters {
-    booleanParam(name: 'FORCE_DEPLOY', defaultValue: false, description: 'Force deployment even if no changes')
+    booleanParam(name: 'FORCE_DEPLOY', defaultValue: true, description: 'Force deployment even if no changes')
 }
 
 def serviceConfig = [
