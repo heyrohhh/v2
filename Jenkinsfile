@@ -104,7 +104,7 @@ stage('Deploy to Kubernetes') {
 
             def services = serviceConfig.keySet()
 
-            services.each { svc ->
+            services.each { svc -> 
 
                 def helmService = serviceMap[svc]
 
@@ -116,7 +116,7 @@ stage('Deploy to Kubernetes') {
                 helm upgrade --install ${helmService} k8s/helm/${helmService} \
                 --set image.repository=${DOC_USER}/${svc} \
                 --set image.tag=${TAG} \
-                --namespace microservices \
+                --namespace microservice \
                 --create-namespace \
                 --wait
                 """
