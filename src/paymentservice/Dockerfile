@@ -39,5 +39,5 @@ COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY . .
         #port
 EXPOSE 50051
-
+ 
 ENTRYPOINT [ "node", "index.js" ]    

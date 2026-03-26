@@ -27,7 +27,7 @@ FROM base
 # Enable unbuffered logging
 ENV PYTHONUNBUFFERED=1
 
-# get packages
+# get packages 
 WORKDIR /shoppingassistantservice
 
 # Grab packages from builder

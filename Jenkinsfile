@@ -99,10 +99,13 @@ pipeline {
         }
 
 stage('Deploy to Kubernetes') {
+    when {
+        expression { env.detectChanges || params.FORCE_DEPLOY }
+    }
     steps {
         script {
 
-            def services = serviceConfig.keySet()
+            def services = env.detectChanges ? env.detectChanges.split(',') : []
 
             services.each { svc -> 
 
@@ -117,8 +120,7 @@ stage('Deploy to Kubernetes') {
                 --set image.repository=${DOC_USER}/${svc} \
                 --set image.tag=${TAG} \
                 --namespace microservice \
-                --create-namespace \
-                --wait
+                --create-namespace 
                 """
             }
         }

@@ -18,7 +18,7 @@ FROM --platform=$BUILDPLATFORM node:20.20.0-alpine@sha256:09e2b3d9726018aecf269b
 RUN apk add --update --no-cache \
     python3 \
     make \
-    g++
+    g++   
  #dir   
 WORKDIR /usr/src/app
 COPY package*.json ./

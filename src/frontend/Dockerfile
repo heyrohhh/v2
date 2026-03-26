@@ -15,4 +15,4 @@ COPY ./templates ./templates
 COPY ./static ./static
 ENV GOTRACEBACK=single
 EXPOSE 8080
-ENTRYPOINT [ "/src/server" ]    
+ENTRYPOINT [ "/src/server" ]     
