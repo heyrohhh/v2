@@ -160,6 +160,6 @@ volumeMounts:
 nodeSelector: {}
 
 tolerations: []
-
+namespace: "microservice"
 affinity: {}
 

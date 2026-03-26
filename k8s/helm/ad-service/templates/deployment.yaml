@@ -4,7 +4,7 @@ metadata:
   name: {{ include "ad-service.fullname" . }}
   labels:
     {{- include "ad-service.labels" . | nindent 4 }}
-  namespace: {{ .Values.namespace | quote }}
+  
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
@@ -23,7 +23,6 @@ spec:
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-      namespace: {{ .Values.namespace }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:

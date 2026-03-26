@@ -22,7 +22,7 @@ spec:
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-      namespace: {{ .Values.namespace }}
+     
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
